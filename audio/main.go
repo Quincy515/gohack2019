@@ -40,6 +40,7 @@ func main() {
 	psc := redis.PubSubConn{Conn: rConn}
 	psc.Subscribe("audio")
 	for {
+		time.Sleep(time.Second*1)
 		switch v := psc.Receive().(type) {
 		case redis.Message:
 			fmt.Printf("%s: message: %s\n", v.Channel, v.Data)
@@ -50,7 +51,6 @@ func main() {
 
 			if dec, data, err = minimp3.DecodeFull(file); err != nil {
 				fmt.Println("解析来自redis的音频失败", err)
-
 			}
 		case redis.Subscription:
 			fmt.Printf("%s: %s %d\n", v.Channel, v.Kind, v.Count)

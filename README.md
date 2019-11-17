@@ -6,6 +6,7 @@
 整个过程模拟人眼看到的内容，拍照成图片，图片转文字，文字转语音，语音播放
 
 # 模块划分
+- Minio云存储图片          使用Minio云存储
 - 图片转文字 文字识别服务    使用百度AI ocr服务
 - 处理文字发送给MQ          使用阿里云AMQP服务
 - 文字合成语音服务          使用百度AI tts服务
@@ -20,16 +21,24 @@
 	go get github.com/garyburd/redigo 
 	go get github.com/hajimehoshi/oto 
 	go get github.com/streadway/amqp 
-	go get github.com/tosone/minimp3 
+	go get github.com/tosone/minimp3
+	go get github.com/minio/minio-go/v6 
 ```
 
 2. 项目启动 
 
-开启主服务 图片转文字，文字转语言
+开启消息队列服务文字转语言
 ```bash
 go build main.go // 在项目根目录中
 ./main // 启动main
 
+```
+
+开启从云储存获取图片服务
+```bash
+cd store
+go build main.go 
+./main
 ```
 
 开启语音播放服务
@@ -72,12 +81,14 @@ go build main.go
 ```
 
 # 进度说明
+- [x] Minio云储存图片          使用Minio云存储服务✔️
 - [x] 图片转文字 文字识别服务    使用百度AI ocr服务 ✔️
 - [x] 处理文字发送给MQ          使用阿里云AMQP服务 ✔️
 - [x] 文字合成语音服务          使用百度AI tts服务 ✔️
 - [x] 语音文件通过Redis发布     使用公有Redis服务  ✔️
 - [x] 通过Redis订阅播放语音     独立部署          ✔️
-- [ ] 自然语言处理，过滤广播等不必要文字            
+- [ ] 生成的语音文件存放公有云    跨机器播放语音
+- [ ] 自然语言处理，过滤广告等不必要文字            
 - [ ] 语音交互，如语音唤醒、语音识别、语音控制       
 - [ ] 更多功能，更多场景，敬请期待...
 

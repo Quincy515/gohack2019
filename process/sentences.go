@@ -44,51 +44,51 @@ func Sentences(text string) string {
 	//fmt.Println("整理后: ", sentences)
 
 	// 测试: 通过 RabbitMQ 分段播放语音
-	size := len(sentences)
-	cnt := 0
-	for size > config.SplitSize {
-		// 写入异步执行任务队列
-		var data mq.TransferWords
-		if config.SplitSize+cnt*config.SplitSize < len(sentences)-1 {
-			data = mq.TransferWords{
-				Words: sentences[cnt*config.SplitSize : config.SplitSize+cnt*config.SplitSize],
-			}
-		} else {
-			data = mq.TransferWords{
-				Words: sentences[cnt*config.SplitSize:],
-			}
-		}
-		pubWords, _ := json.Marshal(data)
-		pubSuc := mq.Publish(
-			config.TransExchangeName,
-			config.TransOSSRoutingKey,
-			pubWords)
-		if !pubSuc {
-			// TODO: 当前发送转移信息失败, 稍后重试
-			fmt.Println("RabbitMQ转移失败")
-		} else {
-			fmt.Printf("%s放入消息队列", pubWords)
-		}
-		cnt++
-		size -= config.SplitSize
-		fmt.Println("还剩余size:", size)
-	}
+	//size := len(sentences)
+	//cnt := 0
+	//for size > config.SplitSize {
+	//	// 写入异步执行任务队列
+	//	var data mq.TransferWords
+	//	if config.SplitSize+cnt*config.SplitSize < len(sentences)-1 {
+	//		data = mq.TransferWords{
+	//			Words: sentences[cnt*config.SplitSize : config.SplitSize+cnt*config.SplitSize],
+	//		}
+	//	} else {
+	//		data = mq.TransferWords{
+	//			Words: sentences[cnt*config.SplitSize:],
+	//		}
+	//	}
+	//	pubWords, _ := json.Marshal(data)
+	//	pubSuc := mq.Publish(
+	//		config.TransExchangeName,
+	//		config.TransOSSRoutingKey,
+	//		pubWords)
+	//	if !pubSuc {
+	//		// TODO: 当前发送转移信息失败, 稍后重试
+	//		fmt.Println("RabbitMQ转移失败")
+	//	} else {
+	//		fmt.Printf("%s放入消息队列", pubWords)
+	//	}
+	//	cnt++
+	//	size -= config.SplitSize
+	//	fmt.Println("还剩余size:", size)
+	//}
 
 	// 通过 RabbitMQ 异步处理TTS
-	//data := mq.TransferWords{
-	//	Words: sentences,
-	//}
-	//
-	//pubWords, _ := json.Marshal(data)
-	//pubSuc := mq.Publish(
-	//	config.TransExchangeName,
-	//	config.TransOSSRoutingKey,
-	//	pubWords)
-	//if !pubSuc {
-	//	// TODO: 当前发送转移信息失败, 稍后重试
-	//	fmt.Println("RabbitMQ转移失败")
-	//} else {
-	//	fmt.Printf("%s放入消息队列\n\n", pubWords)
-	//}
+	data := mq.TransferWords{
+		Words: sentences[50:],
+	}
+
+	pubWords, _ := json.Marshal(data)
+	pubSuc := mq.Publish(
+		config.TransExchangeName,
+		config.TransOSSRoutingKey,
+		pubWords)
+	if !pubSuc {
+		// TODO: 当前发送转移信息失败, 稍后重试
+		fmt.Println("RabbitMQ转移失败")
+	} else {
+		fmt.Printf("放入消息队列成功：%s\n\n", pubWords)
+	}
 	return sentences
 }

@@ -5,11 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"goland/config"
-	"goland/mq"
 	rPool "goland/redis"
 	"goland/util"
 	"io/ioutil"
-	"log"
 	"net/http"
 )
 
@@ -59,43 +57,26 @@ func Text2audio(text string) (int, error) {
 			if err == nil {
 				// write to file
 				err = ioutil.WriteFile(filename, audio, 0666)
+				if err != nil {
+					fmt.Println("存储音频文件失败!", err)
+					return 500, err
+				}
+				fmt.Println("存储音频文件成功！")
+				// 2. 获得redis的一个连接
+				rConn := rPool.RedisPool().Get()
+				defer rConn.Close()
+				// 3. 发布redis消息
+				reply, err := rConn.Do("PUBLISH", "audio", filename)
+				if err != nil {
+					fmt.Println("发布redis消息失败: ", err)
+				}
+				fmt.Println("发送redis消息成功: ", reply)
 			}
-
-			// 2. 获得redis的一个连接
-			rConn := rPool.RedisPool().Get()
-			defer rConn.Close()
-			// 3. 发布redis消息
-			reply, err := rConn.Do("PUBLISH", "audio", filename)
-			if err != nil {
-				fmt.Println("发布redis消息失败: ", err)
-			}
-			fmt.Println("发送redis消息成功: ", reply)
-
 			_ = resp.Body.Close()
 		} else {
 			err = errors.New("Unknown Content-Type ! =>" + contentType + " | url: " + urlT2a)
 		}
 	}
 	return 200, err
-}
-
-// ProcessTransfer 通过 RabbitMQ 异步处理文字转语音
-func ProcessTransfer(msg []byte) bool {
-	// 1. 解析msg
-	fmt.Println("MQ消费者解析消息:\n", string(msg))
-	pubData := mq.TransferWords{}
-	err := json.Unmarshal(msg, &pubData)
-	if err != nil {
-		log.Println(err.Error())
-		return false
-	}
-
-	// 2. 文字转语音播放
-	resp, err := Text2audio(pubData.Words)
-	if resp != 200 || err != nil {
-		fmt.Println("处理文字转语音失败!", err)
-		return false
-	}
-	return true
 }
 
