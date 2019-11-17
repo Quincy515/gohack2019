@@ -39,7 +39,7 @@ func Sentences(text string) string {
 	}
 
 	sentences := buffer.String()
-	// 去除特殊空格
+	// 去除特殊字符空格
 	sentences = strings.Join(strings.Fields(sentences), "")
 	//fmt.Println("整理后: ", sentences)
 
@@ -76,7 +76,7 @@ func Sentences(text string) string {
 
 	// 通过 RabbitMQ 异步处理TTS
 	data := mq.TransferWords{
-		Words: sentences[50:],
+		Words: sentences[10:], // 取出前面可能的特殊字符
 	}
 
 	pubWords, _ := json.Marshal(data)
