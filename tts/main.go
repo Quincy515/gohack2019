@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/hajimehoshi/oto"
-	"github.com/tosone/minimp3"
 	"goland/config"
 	"goland/mq"
 	rPool "goland/redis"
